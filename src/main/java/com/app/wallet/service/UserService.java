@@ -1,6 +1,6 @@
 package com.app.wallet.service;
 
-import com.app.wallet.dto.RegisterUserRequest;
+import com.app.wallet.dto.RegisterUserRequestDto;
 import com.app.wallet.model.User;
 import com.app.wallet.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -16,7 +16,7 @@ public class UserService {
         this.repository = repository;
     }
 
-    public void register(RegisterUserRequest request)
+    public void register(RegisterUserRequestDto request)
     {
         Optional<User> existing =
                 repository.findByEmail(request.getEmail());

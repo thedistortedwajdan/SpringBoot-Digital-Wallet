@@ -1,7 +1,8 @@
 package com.app.wallet.controller;
 
-import com.app.wallet.dto.RegisterUserRequest;
+import com.app.wallet.dto.RegisterUserRequestDto;
 import com.app.wallet.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,7 +23,8 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<Void> register(
-            @RequestBody RegisterUserRequest request) {
+            @Valid
+            @RequestBody RegisterUserRequestDto request) {
 
         userService.register(request);
 
