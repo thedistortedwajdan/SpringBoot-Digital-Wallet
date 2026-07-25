@@ -54,4 +54,21 @@ public class UserRepository {
 
         return users.stream().findFirst();
     }
+
+    public boolean existsByEmail(String email) {
+
+        String sql = """
+        SELECT COUNT(*)
+        FROM users
+        WHERE email = ?
+        """;
+
+        Integer count = jdbcTemplate.queryForObject(
+                sql,
+                Integer.class,
+                email
+        );
+
+        return (count != null && count > 0);
+    }
 }

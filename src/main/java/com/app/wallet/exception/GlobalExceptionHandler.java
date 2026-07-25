@@ -35,4 +35,26 @@ public class GlobalExceptionHandler {
                 .body(error);
     }
 
+    @ExceptionHandler(EmailAlreadyExistsException.class)
+    public ResponseEntity<ApiErrorDto> handleEmailAlreadyExistsException(
+            EmailAlreadyExistsException ex,
+            HttpServletRequest request) {
+
+        ApiErrorDto error = new ApiErrorDto();
+
+        error.setTimestamp(LocalDateTime.now());
+
+        error.setStatus(HttpStatus.CONFLICT.value());
+
+        error.setError(HttpStatus.CONFLICT.getReasonPhrase());
+
+        error.setMessage(ex.getMessage());
+
+        error.setPath(request.getRequestURI());
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(error);
+    }
+
 }
