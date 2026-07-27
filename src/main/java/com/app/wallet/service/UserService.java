@@ -4,27 +4,32 @@ import com.app.wallet.dto.RegisterUserRequestDto;
 import com.app.wallet.exception.EmailAlreadyExistsException;
 import com.app.wallet.model.User;
 import com.app.wallet.repository.UserRepository;
+import com.app.wallet.repository.WalletRepository;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserService {
 
-    private final UserRepository repository;
+    private final UserRepository userRepository;
+    private final WalletRepository walletRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository repository, PasswordEncoder passwordEncoder) {
-        this.repository = repository;
+    public UserService(UserRepository userRepository,
+                       WalletRepository walletRepository,
+                       PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.walletRepository = walletRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
+    @Transactional
     public void register(RegisterUserRequestDto request)
     {
 
-            if(repository.existsByEmail(request.getEmail())) {
+            if(userRepository.existsByEmail(request.getEmail())) {
                 throw new EmailAlreadyExistsException(request.getEmail());
             }
 
@@ -41,11 +46,14 @@ public class UserService {
             );
 
             user.setRole("USER");
+        long userId;
         try {
-            repository.save(user);
+
+            userId = userRepository.createUser(user);
         } catch (DuplicateKeyException ex) {
             throw new EmailAlreadyExistsException(request.getEmail(), ex);
         }
+        walletRepository.createWallet(userId);
     }
 
 }

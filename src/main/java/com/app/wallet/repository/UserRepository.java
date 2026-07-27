@@ -3,8 +3,12 @@ package com.app.wallet.repository;
 import com.app.wallet.mapper.UserRowMapper;
 import com.app.wallet.model.User;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
+import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,7 +24,7 @@ public class UserRepository {
         this.userRowMapper= userRowMapper;
     }
 
-    public int save(User user) {
+    public long createUser(User user) {
 
         String sql = """
         INSERT INTO users
@@ -28,17 +32,30 @@ public class UserRepository {
         VALUES (?, ?, ?, ?, ?)
         """;
 
-        return jdbcTemplate.update(
-                sql,
-                user.getFirstName(),
-                user.getLastName(),
-                user.getEmail(),
-                user.getPassword(),
-                user.getRole()
-        );
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+
+        jdbcTemplate.update(connection -> {
+
+            PreparedStatement ps = connection.prepareStatement(
+                    sql,
+                    new String[]{"id"}
+            );
+
+            ps.setString(1, user.getFirstName());
+            ps.setString(2, user.getLastName());
+            ps.setString(3, user.getEmail());
+            ps.setString(4, user.getPassword());
+            ps.setString(5, user.getRole());
+
+            return ps;
+
+        }, keyHolder);
+
+        return keyHolder.getKey().longValue();
+
     }
 
-    public Optional<User> findByEmail(String email) {
+    public Optional<User> findUserByEmail(String email) {
 
         String sql = """
         SELECT *
