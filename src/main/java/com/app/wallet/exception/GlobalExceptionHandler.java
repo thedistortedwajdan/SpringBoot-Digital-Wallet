@@ -57,4 +57,47 @@ public class GlobalExceptionHandler {
                 .body(error);
     }
 
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ApiErrorDto> handleInvalidCredentialsException(
+            InvalidCredentialsException ex,
+            HttpServletRequest request) {
+
+        ApiErrorDto error = new ApiErrorDto();
+
+        error.setTimestamp(LocalDateTime.now());
+
+        error.setStatus(HttpStatus.UNAUTHORIZED.value());
+
+        error.setError(HttpStatus.UNAUTHORIZED.getReasonPhrase());
+
+        error.setMessage(ex.getMessage());
+
+        error.setPath(request.getRequestURI());
+
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(error);
+    }
+
+    @ExceptionHandler(UserDoesNotExistException.class)
+    public ResponseEntity<ApiErrorDto> handleUserDoesNotExistException(
+            UserDoesNotExistException ex,
+            HttpServletRequest request) {
+
+        ApiErrorDto error = new ApiErrorDto();
+
+        error.setTimestamp(LocalDateTime.now());
+
+        error.setStatus(HttpStatus.NOT_FOUND.value());
+
+        error.setError(HttpStatus.NOT_FOUND.getReasonPhrase());
+
+        error.setMessage(ex.getMessage());
+
+        error.setPath(request.getRequestURI());
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(error);
+    }
 }

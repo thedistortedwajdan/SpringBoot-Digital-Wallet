@@ -1,7 +1,10 @@
 package com.app.wallet.service;
 
+import com.app.wallet.dto.LoginUserRequestDto;
+import com.app.wallet.dto.LoginUserResponseDto;
 import com.app.wallet.dto.RegisterUserRequestDto;
 import com.app.wallet.exception.EmailAlreadyExistsException;
+import com.app.wallet.exception.InvalidCredentialsException;
 import com.app.wallet.model.User;
 import com.app.wallet.repository.UserRepository;
 import com.app.wallet.repository.WalletRepository;
@@ -9,6 +12,8 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Service
 public class UserService {
@@ -55,5 +60,7 @@ public class UserService {
         }
         walletRepository.createWallet(userId);
     }
+
+
 
 }

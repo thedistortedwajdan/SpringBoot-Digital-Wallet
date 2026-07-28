@@ -1,5 +1,7 @@
 package com.app.wallet.controller;
 
+import com.app.wallet.dto.LoginUserRequestDto;
+import com.app.wallet.dto.LoginUserResponseDto;
 import com.app.wallet.dto.RegisterUserRequestDto;
 import com.app.wallet.service.UserService;
 import jakarta.validation.Valid;

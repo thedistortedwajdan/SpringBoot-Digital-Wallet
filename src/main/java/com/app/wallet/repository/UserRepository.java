@@ -70,6 +70,7 @@ public class UserRepository {
         );
 
         return users.stream().findFirst();
+
     }
 
     public boolean existsByEmail(String email) {
