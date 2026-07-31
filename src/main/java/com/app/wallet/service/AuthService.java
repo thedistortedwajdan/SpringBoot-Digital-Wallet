@@ -15,10 +15,12 @@ import java.util.Optional;
 public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
 
@@ -36,12 +38,15 @@ public class AuthService {
             throw new InvalidCredentialsException();
         }
 
+
+
         LoginUserResponseDto response = new LoginUserResponseDto();
 
         response.setId(user.getId());
         response.setEmail(user.getEmail());
         response.setFirstName(user.getFirstName());
         response.setLastName(user.getLastName());
+        response.setAccessToken(jwtService.generateToken(user.getId()));
 
         return response;
 

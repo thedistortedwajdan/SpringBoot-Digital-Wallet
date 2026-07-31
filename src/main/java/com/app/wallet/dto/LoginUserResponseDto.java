@@ -5,6 +5,16 @@ public class LoginUserResponseDto {
     private Long id;
     private String firstName;
 
+    public String getAccessToken() {
+        return accessToken;
+    }
+
+    public void setAccessToken(String accessToken) {
+        this.accessToken = accessToken;
+    }
+
+    private String accessToken;
+
     public String getLastName() {
         return lastName;
     }
