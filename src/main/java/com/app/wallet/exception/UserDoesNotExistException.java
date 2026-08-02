@@ -1,8 +1,8 @@
 package com.app.wallet.exception;
 
-public class UserDoesNotExistException extends Exception {
+public class UserDoesNotExistException extends RuntimeException {
     public UserDoesNotExistException(String email) {
 
-        super("Email [" + email + "] does not exist.");
+        super("User [" + email + "] does not exist.");
     }
 }

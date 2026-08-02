@@ -73,6 +73,24 @@ public class UserRepository {
 
     }
 
+    public Optional<User> findUserById(Long userId) {
+
+        String sql = """
+        SELECT *
+        FROM users
+        WHERE id = ?
+        """;
+
+        List<User> users = jdbcTemplate.query(
+                sql,
+                userRowMapper,
+                userId
+        );
+
+        return users.stream().findFirst();
+
+    }
+
     public boolean existsByEmail(String email) {
 
         String sql = """
