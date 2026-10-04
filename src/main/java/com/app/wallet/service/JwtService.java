@@ -2,7 +2,10 @@ package com.app.wallet.service;
 
 import com.app.wallet.config.JwtProperties;
 import com.app.wallet.model.User;
+import com.app.wallet.exception.InvalidTokenException;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -32,19 +35,7 @@ public class JwtService {
     }
 
     public String generateToken(User user) {
-
-        Date now = new Date();
-
-        Date expiry =
-                new Date(now.getTime()
-                        + jwtProperties.getExpiration());
-
-        return Jwts.builder()
-                .subject(user.getId().toString())
-                .issuedAt(now)
-                .expiration(expiry)
-                .signWith(getSigningKey())
-                .compact();
+        return generateToken(user.getId());
     }
 
     public String generateToken(Long userId) {
@@ -65,13 +56,19 @@ public class JwtService {
 
     public Long getUserIdFromToken(String token) {
 
-        log.info("inside getUserIdFromToken token [" + token + "]");
-        Claims claims = Jwts.parser()
-                .verifyWith(getSigningKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith(getSigningKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
 
-        return Long.parseLong(claims.getSubject());
+            return Long.parseLong(claims.getSubject());
+        } catch (ExpiredJwtException e) {
+            throw new InvalidTokenException("Token has expired", e);
+        } catch (JwtException | IllegalArgumentException e) {
+            // malformed, unsupported, bad signature, blank token or missing/non-numeric subject
+            throw new InvalidTokenException("Invalid token", e);
+        }
     }
 }

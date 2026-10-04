@@ -2,59 +2,72 @@ package com.app.wallet.exception;
 
 import com.app.wallet.dto.ApiErrorDto;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestHeaderException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiErrorDto> handleValidationException(
             MethodArgumentNotValidException ex,
             HttpServletRequest request) {
 
-        ApiErrorDto error = new ApiErrorDto();
+        Map<String, String> fieldErrors = new LinkedHashMap<>();
+        ex.getBindingResult().getFieldErrors().forEach(fieldError ->
+                fieldErrors.putIfAbsent(fieldError.getField(), fieldError.getDefaultMessage()));
 
-        error.setTimestamp(LocalDateTime.now());
+        ApiErrorDto error = build(HttpStatus.BAD_REQUEST, "Validation failed", request);
+        error.setFieldErrors(fieldErrors);
 
-        error.setStatus(HttpStatus.BAD_REQUEST.value());
-
-        error.setError(HttpStatus.BAD_REQUEST.getReasonPhrase());
-
-        error.setMessage("Validation failed");
-
-        error.setPath(request.getRequestURI());
-
-        return ResponseEntity
-                .badRequest()
-                .body(error);
+        return ResponseEntity.badRequest().body(error);
     }
 
-    @ExceptionHandler(EmailAlreadyExistsException.class)
-    public ResponseEntity<ApiErrorDto> handleEmailAlreadyExistsException(
-            EmailAlreadyExistsException ex,
+    @ExceptionHandler({
+            HttpMessageNotReadableException.class,
+            MethodArgumentTypeMismatchException.class,
+            MissingServletRequestParameterException.class,
+            MissingRequestHeaderException.class
+    })
+    public ResponseEntity<ApiErrorDto> handleMalformedRequest(
+            Exception ex,
             HttpServletRequest request) {
 
-        ApiErrorDto error = new ApiErrorDto();
+        return respond(HttpStatus.BAD_REQUEST, "Malformed or invalid request", request);
+    }
 
-        error.setTimestamp(LocalDateTime.now());
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ApiErrorDto> handleBadRequest(
+            BadRequestException ex,
+            HttpServletRequest request) {
 
-        error.setStatus(HttpStatus.CONFLICT.value());
+        return respond(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
 
-        error.setError(HttpStatus.CONFLICT.getReasonPhrase());
+    @ExceptionHandler({EmailAlreadyExistsException.class, ConflictException.class})
+    public ResponseEntity<ApiErrorDto> handleConflict(
+            RuntimeException ex,
+            HttpServletRequest request) {
 
-        error.setMessage(ex.getMessage());
-
-        error.setPath(request.getRequestURI());
-
-        return ResponseEntity
-                .status(HttpStatus.CONFLICT)
-                .body(error);
+        return respond(HttpStatus.CONFLICT, ex.getMessage(), request);
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)
@@ -62,42 +75,80 @@ public class GlobalExceptionHandler {
             InvalidCredentialsException ex,
             HttpServletRequest request) {
 
-        ApiErrorDto error = new ApiErrorDto();
-
-        error.setTimestamp(LocalDateTime.now());
-
-        error.setStatus(HttpStatus.UNAUTHORIZED.value());
-
-        error.setError(HttpStatus.UNAUTHORIZED.getReasonPhrase());
-
-        error.setMessage(ex.getMessage());
-
-        error.setPath(request.getRequestURI());
-
-        return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
-                .body(error);
+        return respond(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
     }
 
-    @ExceptionHandler(UserDoesNotExistException.class)
-    public ResponseEntity<ApiErrorDto> handleUserDoesNotExistException(
-            UserDoesNotExistException ex,
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ApiErrorDto> handleAuthenticationException(
+            AuthenticationException ex,
             HttpServletRequest request) {
 
-        ApiErrorDto error = new ApiErrorDto();
+        String message = ex instanceof InvalidTokenException
+                ? ex.getMessage()
+                : "Authentication is required to access this resource";
 
-        error.setTimestamp(LocalDateTime.now());
+        return respond(HttpStatus.UNAUTHORIZED, message, request);
+    }
 
-        error.setStatus(HttpStatus.NOT_FOUND.value());
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiErrorDto> handleAccessDenied(
+            AccessDeniedException ex,
+            HttpServletRequest request) {
 
-        error.setError(HttpStatus.NOT_FOUND.getReasonPhrase());
+        return respond(HttpStatus.FORBIDDEN, "You do not have permission to access this resource", request);
+    }
 
-        error.setMessage(ex.getMessage());
+    @ExceptionHandler(AccountDisabledException.class)
+    public ResponseEntity<ApiErrorDto> handleAccountDisabled(
+            AccountDisabledException ex,
+            HttpServletRequest request) {
 
-        error.setPath(request.getRequestURI());
+        return respond(HttpStatus.FORBIDDEN, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler({UserDoesNotExistException.class, ResourceNotFoundException.class})
+    public ResponseEntity<ApiErrorDto> handleNotFound(
+            RuntimeException ex,
+            HttpServletRequest request) {
+
+        return respond(HttpStatus.NOT_FOUND, ex.getMessage(), request);
+    }
+
+    /**
+     * Fallback. Framework exceptions that already carry a status (405, 404 for unknown paths,
+     * 415, ...) keep it; anything else is an unexpected 500 and its details are not leaked.
+     */
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiErrorDto> handleUnexpected(
+            Exception ex,
+            HttpServletRequest request) {
+
+        if (ex instanceof ErrorResponse errorResponse) {
+            HttpStatusCode status = errorResponse.getStatusCode();
+            HttpStatus resolved = HttpStatus.resolve(status.value());
+            String message = status.is4xxClientError() && resolved != null
+                    ? resolved.getReasonPhrase()
+                    : "Request failed";
+            return respond(status, message, request);
+        }
+
+        log.error("unhandled exception on [{}]", request.getRequestURI(), ex);
+        return respond(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error occurred", request);
+    }
+
+    private ResponseEntity<ApiErrorDto> respond(
+            HttpStatusCode status,
+            String message,
+            HttpServletRequest request) {
 
         return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(error);
+                .status(status)
+                .body(build(status, message, request));
+    }
+
+    private ApiErrorDto build(HttpStatusCode status, String message, HttpServletRequest request) {
+        HttpStatus resolved = HttpStatus.resolve(status.value());
+        String reason = resolved != null ? resolved.getReasonPhrase() : "Error";
+        return ApiErrorDto.of(status.value(), reason, message, request.getRequestURI());
     }
 }

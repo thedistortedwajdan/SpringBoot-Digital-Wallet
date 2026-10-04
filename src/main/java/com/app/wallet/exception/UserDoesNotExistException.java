@@ -5,4 +5,8 @@ public class UserDoesNotExistException extends RuntimeException {
 
         super("User [" + email + "] does not exist.");
     }
+
+    public UserDoesNotExistException(Long id) {
+        super("User with id [" + id + "] does not exist.");
+    }
 }

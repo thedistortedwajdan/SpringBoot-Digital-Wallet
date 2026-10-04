@@ -1,8 +1,32 @@
 package com.app.wallet.dto;
 
-import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
+import java.time.LocalDateTime;
+import java.util.Map;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiErrorDto {
+
+    public static ApiErrorDto of(int status, String error, String message, String path) {
+        ApiErrorDto dto = new ApiErrorDto();
+        dto.setTimestamp(LocalDateTime.now());
+        dto.setStatus(status);
+        dto.setError(error);
+        dto.setMessage(message);
+        dto.setPath(path);
+        return dto;
+    }
+
+    public Map<String, String> getFieldErrors() {
+        return fieldErrors;
+    }
+
+    public void setFieldErrors(Map<String, String> fieldErrors) {
+        this.fieldErrors = fieldErrors;
+    }
+
+    private Map<String, String> fieldErrors;
 
     public String getMessage() {
         return message;

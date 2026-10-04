@@ -2,6 +2,7 @@ package com.app.wallet.service;
 
 import com.app.wallet.dto.LoginUserRequestDto;
 import com.app.wallet.dto.LoginUserResponseDto;
+import com.app.wallet.exception.AccountDisabledException;
 import com.app.wallet.exception.InvalidCredentialsException;
 import com.app.wallet.model.User;
 import com.app.wallet.repository.UserRepository;
@@ -39,6 +40,10 @@ public class AuthService {
                 user.getPassword())) {
 
             throw new InvalidCredentialsException();
+        }
+
+        if (!user.isActive()) {
+            throw new AccountDisabledException();
         }
 
 
