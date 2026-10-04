@@ -40,6 +40,15 @@ public class Wallet {
     private Long id;
     private Long userId;
     private BigDecimal balance;
+    private String status;
     private LocalDateTime createdAt;
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
 }
