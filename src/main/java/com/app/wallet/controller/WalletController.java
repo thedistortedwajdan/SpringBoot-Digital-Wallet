@@ -9,6 +9,9 @@ import com.app.wallet.dto.WalletResponseDto;
 import com.app.wallet.service.AuthenticatedUserProvider;
 import com.app.wallet.service.WalletService;
 import jakarta.validation.Valid;
+import com.app.wallet.config.ApiErrorResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,6 +21,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@Tag(name = "Wallet")
+@ApiErrorResponses
 @RequestMapping("/api/wallet")
 public class WalletController {
 
@@ -32,16 +37,19 @@ public class WalletController {
         this.authenticatedUserProvider = authenticatedUserProvider;
     }
 
+    @Operation(summary = "Get the authenticated user's wallet")
     @GetMapping
     public WalletResponseDto getWallet() {
         return walletService.getWallet(authenticatedUserProvider.getAuthenticatedUser());
     }
 
+    @Operation(summary = "Get the wallet balance")
     @GetMapping("/balance")
     public BalanceResponseDto getBalance() {
         return walletService.getBalance(authenticatedUserProvider.getAuthenticatedUser());
     }
 
+    @Operation(summary = "Deposit money")
     @PostMapping("/deposit")
     public TransactionResponseDto deposit(
             @Valid @RequestBody MoneyRequestDto request,
@@ -51,6 +59,7 @@ public class WalletController {
                 request.amount(), request.description(), idempotencyKey);
     }
 
+    @Operation(summary = "Withdraw money (fails if balance is insufficient)")
     @PostMapping("/withdraw")
     public TransactionResponseDto withdraw(
             @Valid @RequestBody MoneyRequestDto request,
@@ -60,6 +69,7 @@ public class WalletController {
                 request.amount(), request.description(), idempotencyKey);
     }
 
+    @Operation(summary = "Transfer money to another user by email")
     @PostMapping("/transfer")
     public TransactionResponseDto transfer(
             @Valid @RequestBody TransferRequestDto request,
@@ -69,6 +79,7 @@ public class WalletController {
                 request.recipientEmail(), request.amount(), request.description(), idempotencyKey);
     }
 
+    @Operation(summary = "List wallet transactions, newest first")
     @GetMapping("/transactions")
     public PageResponseDto<TransactionResponseDto> getTransactions(
             @RequestParam(defaultValue = "0") int page,

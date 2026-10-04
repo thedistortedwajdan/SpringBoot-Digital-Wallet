@@ -8,6 +8,9 @@ import com.app.wallet.dto.UserResponseDto;
 import com.app.wallet.service.AuthenticatedUserProvider;
 import com.app.wallet.service.UserService;
 import jakarta.validation.Valid;
+import com.app.wallet.config.ApiErrorResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,6 +24,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@Tag(name = "Admin - Users")
+@ApiErrorResponses
 @RequestMapping("/api/admin/users")
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminUserController {
@@ -34,6 +39,7 @@ public class AdminUserController {
         this.authenticatedUserProvider = authenticatedUserProvider;
     }
 
+    @Operation(summary = "List all users (ADMIN)")
     @GetMapping
     public PageResponseDto<UserResponseDto> listUsers(
             @RequestParam(defaultValue = "0") int page,
@@ -41,11 +47,13 @@ public class AdminUserController {
         return userService.listUsers(page, size);
     }
 
+    @Operation(summary = "Get a user by id (ADMIN)")
     @GetMapping("/{id}")
     public UserResponseDto getUser(@PathVariable Long id) {
         return userService.getUser(id);
     }
 
+    @Operation(summary = "Update a user (ADMIN)")
     @PutMapping("/{id}")
     public UserResponseDto updateUser(
             @PathVariable Long id,
@@ -53,6 +61,7 @@ public class AdminUserController {
         return userService.updateUser(id, request);
     }
 
+    @Operation(summary = "Change a user's role (ADMIN)")
     @PatchMapping("/{id}/role")
     public UserResponseDto changeRole(
             @PathVariable Long id,
@@ -61,6 +70,7 @@ public class AdminUserController {
                 authenticatedUserProvider.getAuthenticatedUser(), id, request.role());
     }
 
+    @Operation(summary = "Activate or deactivate a user (ADMIN)")
     @PatchMapping("/{id}/status")
     public UserResponseDto changeStatus(
             @PathVariable Long id,
@@ -69,6 +79,7 @@ public class AdminUserController {
                 authenticatedUserProvider.getAuthenticatedUser(), id, request.active());
     }
 
+    @Operation(summary = "Delete a user without wallet activity (ADMIN)")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(authenticatedUserProvider.getAuthenticatedUser(), id);
