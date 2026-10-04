@@ -1,8 +1,8 @@
 package com.app.wallet.controller;
 
-import com.app.wallet.dto.LoginUserRequestDto;
-import com.app.wallet.dto.LoginUserResponseDto;
+import com.app.wallet.dto.ChangePasswordRequestDto;
 import com.app.wallet.dto.RegisterUserRequestDto;
+import com.app.wallet.dto.UpdateUserRequestDto;
 import com.app.wallet.dto.UserResponseDto;
 import com.app.wallet.model.User;
 import com.app.wallet.service.AuthenticatedUserProvider;
@@ -45,6 +45,24 @@ public class UserController {
         User user = authenticatedUserProvider.getAuthenticatedUser();
 
         return UserResponseDto.from(user);
+    }
+
+    @PutMapping("/me")
+    public UserResponseDto updateCurrentUser(@Valid @RequestBody UpdateUserRequestDto request) {
+
+        User user = authenticatedUserProvider.getAuthenticatedUser();
+
+        return userService.updateUser(user.getId(), request);
+    }
+
+    @PutMapping("/me/password")
+    public ResponseEntity<Void> changePassword(@Valid @RequestBody ChangePasswordRequestDto request) {
+
+        User user = authenticatedUserProvider.getAuthenticatedUser();
+
+        userService.changePassword(user.getId(), request);
+
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/ping")

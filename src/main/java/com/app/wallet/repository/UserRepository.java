@@ -129,4 +129,41 @@ public class UserRepository {
 
         return count == null ? 0 : count;
     }
+
+    public void updateProfile(Long id, String firstName, String lastName, String email) {
+
+        jdbcTemplate.update(
+                "UPDATE users SET first_name = ?, last_name = ?, email = ? WHERE id = ?",
+                firstName, lastName, email, id
+        );
+    }
+
+    public void updatePassword(Long id, String encodedPassword) {
+
+        jdbcTemplate.update(
+                "UPDATE users SET password = ? WHERE id = ?",
+                encodedPassword, id
+        );
+    }
+
+    public void updateRole(Long id, String role) {
+
+        jdbcTemplate.update(
+                "UPDATE users SET role = ? WHERE id = ?",
+                role, id
+        );
+    }
+
+    public void updateActive(Long id, boolean active) {
+
+        jdbcTemplate.update(
+                "UPDATE users SET active = ? WHERE id = ?",
+                active, id
+        );
+    }
+
+    public boolean deleteById(Long id) {
+
+        return jdbcTemplate.update("DELETE FROM users WHERE id = ?", id) > 0;
+    }
 }
