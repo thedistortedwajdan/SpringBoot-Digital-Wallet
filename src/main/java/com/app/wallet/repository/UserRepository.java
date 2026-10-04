@@ -107,4 +107,26 @@ public class UserRepository {
 
         return (count != null && count > 0);
     }
+
+    public List<User> findAll(int limit, int offset) {
+
+        String sql = """
+        SELECT *
+        FROM users
+        ORDER BY id
+        LIMIT ? OFFSET ?
+        """;
+
+        return jdbcTemplate.query(sql, userRowMapper, limit, offset);
+    }
+
+    public long count() {
+
+        Long count = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM users",
+                Long.class
+        );
+
+        return count == null ? 0 : count;
+    }
 }

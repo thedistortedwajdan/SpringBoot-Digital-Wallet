@@ -44,12 +44,7 @@ public class UserController {
 
         User user = authenticatedUserProvider.getAuthenticatedUser();
 
-        return new UserResponseDto(
-                user.getId(),
-                user.getEmail(),
-                user.getFirstName(),
-                user.getLastName()
-        );
+        return UserResponseDto.from(user);
     }
 
     @PostMapping("/ping")

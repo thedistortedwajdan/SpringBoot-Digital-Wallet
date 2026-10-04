@@ -3,6 +3,7 @@ package com.app.wallet.security;
 import com.app.wallet.controller.UserController;
 import com.app.wallet.exception.InvalidTokenException;
 import com.app.wallet.exception.UserDoesNotExistException;
+import com.app.wallet.model.Role;
 import com.app.wallet.model.User;
 import com.app.wallet.repository.UserRepository;
 import com.app.wallet.service.JwtService;
@@ -65,9 +66,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
 
-            List<GrantedAuthority> authorities = List.of(
-                    new SimpleGrantedAuthority("ROLE_" + user.getRole().toUpperCase())
-            );
+            List<GrantedAuthority> authorities = Role.from(user.getRole())
+                    .<GrantedAuthority>map(role -> new SimpleGrantedAuthority(role.authority()))
+                    .stream()
+                    .toList();
 
             Authentication authentication =
                     new UsernamePasswordAuthenticationToken(

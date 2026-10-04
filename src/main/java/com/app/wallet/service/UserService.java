@@ -2,9 +2,12 @@ package com.app.wallet.service;
 
 import com.app.wallet.dto.LoginUserRequestDto;
 import com.app.wallet.dto.LoginUserResponseDto;
+import com.app.wallet.dto.PageResponseDto;
 import com.app.wallet.dto.RegisterUserRequestDto;
+import com.app.wallet.dto.UserResponseDto;
 import com.app.wallet.exception.EmailAlreadyExistsException;
 import com.app.wallet.exception.InvalidCredentialsException;
+import com.app.wallet.model.Role;
 import com.app.wallet.model.User;
 import com.app.wallet.repository.UserRepository;
 import com.app.wallet.repository.WalletRepository;
@@ -13,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -50,7 +54,7 @@ public class UserService {
                     passwordEncoder.encode(request.getPassword())
             );
 
-            user.setRole("USER");
+            user.setRole(Role.USER.name());
         long userId;
         try {
 
@@ -61,6 +65,18 @@ public class UserService {
         walletRepository.createWallet(userId);
     }
 
+    @Transactional(readOnly = true)
+    public PageResponseDto<UserResponseDto> listUsers(int page, int size) {
 
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.min(Math.max(size, 1), 100);
 
+        List<UserResponseDto> content = userRepository
+                .findAll(safeSize, safePage * safeSize)
+                .stream()
+                .map(UserResponseDto::from)
+                .toList();
+
+        return new PageResponseDto<>(content, safePage, safeSize, userRepository.count());
+    }
 }

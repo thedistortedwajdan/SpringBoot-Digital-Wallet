@@ -1,50 +1,26 @@
 package com.app.wallet.dto;
 
-public class UserResponseDto {
+import com.app.wallet.model.User;
 
-    private Long id;
-    private String email;
+import java.time.LocalDateTime;
 
-    public UserResponseDto(Long id, String email, String firstName, String lastName) {
-        this.id = id;
-        this.email = email;
-        this.firstName = firstName;
-        this.lastName = lastName;
+public record UserResponseDto(
+        Long id,
+        String email,
+        String firstName,
+        String lastName,
+        String role,
+        boolean active,
+        LocalDateTime createdAt) {
+
+    public static UserResponseDto from(User user) {
+        return new UserResponseDto(
+                user.getId(),
+                user.getEmail(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getRole(),
+                user.isActive(),
+                user.getCreatedAt());
     }
-
-    private String firstName;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    private String lastName;
 }
