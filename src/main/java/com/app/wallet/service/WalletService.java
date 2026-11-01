@@ -36,7 +36,7 @@ public class WalletService {
 
     static final String STATUS_COMPLETED = "COMPLETED";
     static final String WALLET_ACTIVE = "ACTIVE";
-    private static final int MAX_IDEMPOTENCY_KEY_LENGTH = 100;
+    private static final int MAX_IDEMPOTENCY_KEY_LENGTH = 64;
     private static final int MAX_BALANCE_PRECISION = 18;
 
     private final WalletRepository walletRepository;

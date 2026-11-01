@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 @RestController
 @Tag(name = "Wallet")
 @ApiErrorResponses
@@ -47,6 +49,12 @@ public class WalletController {
     @GetMapping("/balance")
     public BalanceResponseDto getBalance() {
         return walletService.getBalance(authenticatedUserProvider.getAuthenticatedUser());
+    }
+
+    @Operation(summary = "Get the wallet status")
+    @GetMapping("/status")
+    public Map<String, String> getStatus() {
+        return Map.of("status", walletService.getWallet(authenticatedUserProvider.getAuthenticatedUser()).status());
     }
 
     @Operation(summary = "Deposit money")
