@@ -1,6 +1,6 @@
 # Digital Wallet API
 
-Spring Boot 4 / Java 17 wallet backend: JWT authentication, role-based authorization, user management,
+Spring Boot 4 / Java 25 wallet backend: JWT authentication, role-based authorization, user management,
 and a transaction-safe wallet (deposit, withdraw, transfer, history). PostgreSQL + Flyway, plain JDBC.
 
 ## Features
@@ -16,7 +16,7 @@ and a transaction-safe wallet (deposit, withdraw, transfer, history). PostgreSQL
 
 ## Run locally
 
-Requires JDK 17 and a PostgreSQL database (defaults in `src/main/resources/application.properties`
+Requires JDK 25 and a PostgreSQL database (defaults in `src/main/resources/application.properties`
 point at `localhost:5432/walletdb`). Override anything with environment variables:
 
 | Variable | Meaning |
