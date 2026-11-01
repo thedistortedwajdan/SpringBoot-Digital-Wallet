@@ -1,0 +1,32 @@
+name: Docs check
+
+# Fails a pull request when the docs have problems, or when code changed but the docs pages that
+# describe it did not. It only checks; it never changes anything.
+# To let one pull request through, add the label "skip-docs" to it.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+permissions:
+  contents: read
+
+jobs:
+  docs-check:
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'skip-docs') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # the check compares your branch with the base branch
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+
+      - name: Check the docs
+        run: ./mvnw --batch-mode --no-transfer-progress io.github.thedistortedwajdan.jarbase:jarbase-maven-plugin:0.1.0:validate
+
+      - name: Check the docs were updated with the code
+        run: ./mvnw --batch-mode --no-transfer-progress io.github.thedistortedwajdan.jarbase:jarbase-maven-plugin:0.1.0:affected -Djarbase.base=origin/${{ github.base_ref }} -Djarbase.failOnStale=true
