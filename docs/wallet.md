@@ -27,6 +27,7 @@ endpoints need a token and always act on the wallet of the user the token belong
 |-----------------|--------------|
 | `GET /api/wallet` | Returns the wallet: `id`, `balance`, `status` and `createdAt` |
 | `GET /api/wallet/balance` | Returns just the `balance` |
+| `GET /api/wallet/status` | Returns just the wallet `status`, as `{"status": "..."}` |
 | `POST /api/wallet/deposit` | Adds money |
 | `POST /api/wallet/withdraw` | Takes money out; fails if the balance is too low |
 | `POST /api/wallet/transfer` | Sends money to another user, identified by email |
@@ -70,7 +71,7 @@ returns `content`, `page`, `size` and `totalElements`.
 
 ## Idempotency keys
 
-The three money-moving endpoints accept an optional `Idempotency-Key` header (1 to 100 characters). It makes
+The three money-moving endpoints accept an optional `Idempotency-Key` header (1 to 64 characters). It makes
 retries safe, for example after a network timeout:
 
 - Sending the same key again for the same request returns the **original result** and does not move money a

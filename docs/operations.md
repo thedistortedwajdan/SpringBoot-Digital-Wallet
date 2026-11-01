@@ -24,7 +24,7 @@ Everything can be overridden with environment variables. Defaults live in
 |----------|---------|
 | `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD` | The database connection |
 | `JWT_SECRET` | The key that signs tokens: base64 encoded, at least 256 bits. A good one comes from `openssl rand -base64 48` |
-| `JWT_EXPIRATION` | How long a token lives, in milliseconds (default 900000, which is 15 minutes) |
+| `JWT_EXPIRATION` | How long a token lives, in milliseconds (default 600000, which is 10 minutes) |
 | `APP_ADMIN_EMAIL`, `APP_ADMIN_PASSWORD` | Optional. When both are set, the first administrator is created at startup if it does not exist yet (see [Users](users.md)) |
 
 ## Running locally
